@@ -53,6 +53,7 @@ import {
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
+
 const PromptInputAttachmentsDisplay = () => {
   const attachments = usePromptInputAttachments();
   if (attachments.files.length === 0) {
@@ -73,21 +74,32 @@ const PromptInputAttachmentsDisplay = () => {
     </Attachments>
   );
 };
+
 const models = [
   {
-    name: "GPT 4o",
-    value: "openai/gpt-4o",
+    name: "xAI: Grok Code Fast 1",
+    value: "x-ai/grok-code-fast-1",
   },
   {
-    name: "Deepseek R1",
-    value: "deepseek/deepseek-r1",
+    name: "xAI: Grok 4.1 Fast",
+    value: "x-ai/grok-4.1-fast",
+  },
+  {
+    name: "Google: Gemini 2.5 Flash Image (Nano Banana)",
+    value: "google/gemini-2.5-flash-image",
+  },
+  {
+    name: "Deepseek R1 0528",
+    value: "deepseek/deepseek-r1-0528:free",
   },
 ];
-const ChatBotDemo = () => {
+
+export default function ChatBotDemo() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState<string>(models[0].value);
   const [webSearch, setWebSearch] = useState(false);
   const { messages, sendMessage, status, regenerate } = useChat();
+
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
     const hasAttachments = Boolean(message.files?.length);
@@ -108,6 +120,7 @@ const ChatBotDemo = () => {
     );
     setInput("");
   };
+
   return (
     <div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
       <div className="flex flex-col h-full">
@@ -250,5 +263,4 @@ const ChatBotDemo = () => {
       </div>
     </div>
   );
-};
-export default ChatBotDemo;
+}
