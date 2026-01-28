@@ -21,9 +21,12 @@ export async function POST(req: Request) {
     messages: await convertToModelMessages(messages),
     system:
       "You are a helpful assistant that can answer questions and help with tasks",
-    tools: {
-      getWeather,
-    },
+    tools:
+      model !== "google/gemini-2.5-flash-image"
+        ? {
+            getWeather,
+          }
+        : undefined,
     stopWhen: stepCountIs(5),
   });
 

@@ -204,6 +204,26 @@ export default function ChatBotDemo() {
                       const { toolCallId, state } = part;
                       const widthClass = "w-[min(100%,450px)]";
                       if (state === "output-available") {
+                        if (
+                          part.output &&
+                          typeof part.output === "object" &&
+                          "error" in part.output
+                        ) {
+                          return (
+                            <Message
+                              key={toolCallId}
+                              from={message.role}
+                              className="mb-4"
+                            >
+                              <MessageContent>
+                                <MessageResponse>
+                                  {(part.output as { error: string }).error}
+                                </MessageResponse>
+                              </MessageContent>
+                            </Message>
+                          );
+                        }
+
                         return (
                           <div
                             className={`${widthClass} mb-4`}
