@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Conversation,
   ConversationContent,
@@ -53,6 +54,8 @@ import {
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
+import { Image } from "@/components/ai-elements/image";
+import { Weather, type WeatherAtLocation } from "@/components/weather";
 
 const PromptInputAttachmentsDisplay = () => {
   const attachments = usePromptInputAttachments();
@@ -77,20 +80,20 @@ const PromptInputAttachmentsDisplay = () => {
 
 const models = [
   {
-    name: "xAI: Grok Code Fast 1",
-    value: "x-ai/grok-code-fast-1",
-  },
-  {
     name: "xAI: Grok 4.1 Fast",
     value: "x-ai/grok-4.1-fast",
+  },
+  {
+    name: "Google: Gemini 2.5 Flash",
+    value: "google/gemini-2.5-flash",
   },
   {
     name: "Google: Gemini 2.5 Flash Image (Nano Banana)",
     value: "google/gemini-2.5-flash-image",
   },
   {
-    name: "Deepseek R1 0528",
-    value: "deepseek/deepseek-r1-0528:free",
+    name: "DeepSeek: DeepSeek V3.2",
+    value: "deepseek/deepseek-v3.2",
   },
 ];
 
@@ -126,8 +129,8 @@ export default function ChatBotDemo() {
       <div className="flex flex-col h-full">
         <Conversation className="h-full">
           <ConversationContent>
-            {messages.map((message) => (
-              <div key={message.id}>
+            {messages.map((message, index) => (
+              <div key={message.id} className="flex flex-col gap-2">
                 {message.role === "assistant" &&
                   message.parts.filter((part) => part.type === "source-url")
                     .length > 0 && (
@@ -160,25 +163,6 @@ export default function ChatBotDemo() {
                           <MessageContent>
                             <MessageResponse>{part.text}</MessageResponse>
                           </MessageContent>
-                          {message.role === "assistant" &&
-                            i === messages.length - 1 && (
-                              <MessageActions>
-                                <MessageAction
-                                  onClick={() => regenerate()}
-                                  label="Retry"
-                                >
-                                  <RefreshCcwIcon className="size-3" />
-                                </MessageAction>
-                                <MessageAction
-                                  onClick={() =>
-                                    navigator.clipboard.writeText(part.text)
-                                  }
-                                  label="Copy"
-                                >
-                                  <CopyIcon className="size-3" />
-                                </MessageAction>
-                              </MessageActions>
-                            )}
                         </Message>
                       );
                     case "reasoning":
@@ -196,10 +180,74 @@ export default function ChatBotDemo() {
                           <ReasoningContent>{part.text}</ReasoningContent>
                         </Reasoning>
                       );
+                    case "file":
+                      if (part.mediaType?.startsWith("image/")) {
+                        const base64 = part.url.split(";base64,")[1];
+                        return (
+                          <Message
+                            key={`${message.id}-${i}`}
+                            from={message.role}
+                          >
+                            <MessageContent>
+                              <Image
+                                base64={base64}
+                                mediaType={part.mediaType}
+                                uint8Array={new Uint8Array([])}
+                                alt="Generated image"
+                              />
+                            </MessageContent>
+                          </Message>
+                        );
+                      }
+                      return null;
+                    case "tool-getWeather":
+                      const { toolCallId, state } = part;
+                      const widthClass = "w-[min(100%,450px)]";
+                      if (state === "output-available") {
+                        return (
+                          <div
+                            className={`${widthClass} mb-4`}
+                            key={toolCallId}
+                          >
+                            <Weather
+                              weatherAtLocation={
+                                part.output as WeatherAtLocation
+                              }
+                            />
+                          </div>
+                        );
+                      }
+                      return null;
                     default:
                       return null;
                   }
                 })}
+                {message.role === "assistant" &&
+                  index === messages.length - 1 && (
+                    <Message from={message.role}>
+                      <MessageActions>
+                        <MessageAction
+                          onClick={() => regenerate()}
+                          label="Retry"
+                        >
+                          <RefreshCcwIcon className="size-3" />
+                        </MessageAction>
+                        <MessageAction
+                          onClick={() =>
+                            navigator.clipboard.writeText(
+                              message.parts
+                                .filter((part) => part.type === "text")
+                                .map((part) => part.text)
+                                .join(""),
+                            )
+                          }
+                          label="Copy"
+                        >
+                          <CopyIcon className="size-3" />
+                        </MessageAction>
+                      </MessageActions>
+                    </Message>
+                  )}
               </div>
             ))}
             {status === "submitted" && <Loader />}
@@ -225,7 +273,7 @@ export default function ChatBotDemo() {
             <PromptInputTools>
               <PromptInputActionMenu>
                 <PromptInputActionMenuTrigger />
-                <PromptInputActionMenuContent>
+                <PromptInputActionMenuContent className="w-50">
                   <PromptInputActionAddAttachments />
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>

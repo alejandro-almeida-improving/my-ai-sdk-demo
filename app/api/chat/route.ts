@@ -1,5 +1,6 @@
-import { streamText, UIMessage, convertToModelMessages } from "ai";
+import { streamText, UIMessage, convertToModelMessages, stepCountIs } from "ai";
 import { openrouter } from "@/lib/ai/provider";
+import { getWeather } from "@/lib/ai/tools/get-weather";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -20,6 +21,10 @@ export async function POST(req: Request) {
     messages: await convertToModelMessages(messages),
     system:
       "You are a helpful assistant that can answer questions and help with tasks",
+    tools: {
+      getWeather,
+    },
+    stopWhen: stepCountIs(5),
   });
 
   // send sources and reasoning back to the client
