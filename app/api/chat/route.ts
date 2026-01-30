@@ -22,11 +22,11 @@ export async function POST(req: Request) {
     system:
       "You are a helpful assistant that can answer questions and help with tasks",
     tools:
-      model !== "google/gemini-2.5-flash-image"
-        ? {
+      model === "google/gemini-2.5-flash-image" || webSearch
+        ? undefined
+        : {
             getWeather,
-          }
-        : undefined,
+          },
     stopWhen: stepCountIs(5),
   });
 
